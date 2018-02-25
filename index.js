@@ -3,9 +3,13 @@
 const serverless = require('serverless-http');
 const express = require('express');
 const bodyParser = require('body-parser');
-const debug = require('debug')('index');
+const debug = require('debug')('my:index');
+const signer = require('aws-cloudfront-sign');
+const moment = require('moment');
 
 const app = express();
+
+process.env.CLOUDFRONT_PRIVATE_KEY_STRING = process.env.CLOUDFRONT_PRIVATE_KEY_STRING.replace(/\\n/g, '\n');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -47,6 +51,34 @@ app.get('/old-programs', (req, res) => {
   res.send(form);
 });
 
+app.get('/my-favorites', (req, res) => {
+  const form = generateForm('./my-favorites');
+  res.send(form);
+});
+
+function signUrl(res, domain) {
+  debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
+  const expireTime = moment().utc().add(1, 'day');
+  const signingOptions = {
+    keypairId: process.env.CLOUDFRONT_KEY_PAIR_ID,
+    privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
+    expireTime
+  };
+  const signedCookies = signer.getSignedCookies(`https://${domain}/*`, signingOptions);
+  for (const cookieId in signedCookies) {
+    debug('signedCookies[%s]: %s', cookieId, signedCookies[cookieId]);
+  }
+  const cookieOptions = {
+    domain,
+    path: '/',
+    httpOnly: true,
+    secure: true
+  };
+  res.cookie('CloudFront-Signature', signedCookies['CloudFront-Signature'], cookieOptions);
+  res.cookie('CloudFront-Key-Pair-Id', process.env.CLOUDFRONT_KEY_PAIR_ID, cookieOptions);
+  res.cookie('CloudFront-Expires', String(expireTime.unix()), cookieOptions);
+}
+
 app.post('/old-programs', (req, res) => {
   debug(req.body);
   const username = req.body.username;
@@ -55,12 +87,10 @@ app.post('/old-programs', (req, res) => {
     res.sendStatus(403);
     return;
   }
-  res.json(req.body);
-});
+  // res.json(req.body);
 
-app.get('/my-favorites', (req, res) => {
-  const form = generateForm('./my-favorites');
-  res.send(form);
+  signUrl(res, process.env.OLD_PROGRAMS_DOMAIN);
+  res.redirect(`https://${process.env.OLD_PROGRAMS_DOMAIN}`);
 });
 
 app.post('/my-favorites', (req, res) => {
@@ -71,7 +101,10 @@ app.post('/my-favorites', (req, res) => {
     res.sendStatus(403);
     return;
   }
-  res.json(req.body);
+  // res.json(req.body);
+
+  signUrl(res, process.env.MY_FAVORITES_DOMAIN);
+  res.redirect(`https://${process.env.MY_FAVORITES_DOMAIN}`);
 });
 
 module.exports.handler = serverless(app);
