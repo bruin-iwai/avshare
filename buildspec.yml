@@ -2,8 +2,9 @@ version: 0.2
 
 env:
   parameter-store:
-     MYNAME: "/CodeBuild/MYNAME"
-     MYPASS: "/CodeBuild/MYPASS"
+    MYNAME: "/CodeBuild/MYNAME"
+    MYPASS: "/CodeBuild/MYPASS"
+    CLOUDFRONT_PRIVATE_KEY_STRING: "/CodeBuild/CLOUDFRONT_PRIVATE_KEY_STRING"
 
 phases:
   install:
