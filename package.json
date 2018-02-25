@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/bruin-iwai/avshare#readme",
   "dependencies": {
-    "aws-cloudfront-sign": "^2.2.0"
+    "aws-cloudfront-sign": "^2.2.0",
+    "express": "^4.16.2",
+    "serverless-http": "^1.5.3"
   }
 }
