@@ -23,6 +23,7 @@
   "dependencies": {
     "aws-cloudfront-sign": "^2.2.0",
     "body-parser": "^1.18.2",
+    "debug": "^3.1.0",
     "express": "^4.16.2",
     "serverless-http": "^1.5.3"
   },
