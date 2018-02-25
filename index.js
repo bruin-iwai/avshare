@@ -43,7 +43,7 @@ function generateForm(path) {
 }
 
 app.get('/old-programs', (req, res) => {
-  const form = generateForm('/old-programs');
+  const form = generateForm('./old-programs');
   res.send(form);
 });
 
@@ -59,7 +59,7 @@ app.post('/old-programs', (req, res) => {
 });
 
 app.get('/my-favorites', (req, res) => {
-  const form = generateForm('/my-favorites');
+  const form = generateForm('./my-favorites');
   res.send(form);
 });
 
