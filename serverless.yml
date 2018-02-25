@@ -10,9 +10,15 @@ provider:
   memorySize: 128
   timeout: 60
 
+plugins:
+  - serverless-offline
+
 functions:
   app:
     handler: index.handler
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
+    environment:
+      MYNAME: ${env:MYNAME}
+      MYPASS: ${env:MYPASS}
