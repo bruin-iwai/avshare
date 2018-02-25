@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/bruin-iwai/avshare/issues"
   },
-  "homepage": "https://github.com/bruin-iwai/avshare#readme"
+  "homepage": "https://github.com/bruin-iwai/avshare#readme",
+  "dependencies": {
+    "aws-cloudfront-sign": "^2.2.0"
+  }
 }
