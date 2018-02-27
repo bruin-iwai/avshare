@@ -10,6 +10,7 @@ function generateForm(path) {
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login form</title>
 </head>
 <body>
@@ -66,16 +67,19 @@ function generateIndex(domain, path) {
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${data.title}</title>
 </head>
-<body>`;
+<body>
+<ul>`;
 
     data.files.forEach(v => {
       const signedUrl = signUrl(`https://${domain}/${v.file}`);
       debug('signedUrl: %s', signedUrl);
-      index += `<a href="${signedUrl}">${v.title}</a><br>`;
+      index += `<li><a href="${signedUrl}">${v.title}</a></li>`;
     });
 
+    index += '</ul>';
     index += '</body>';
     index += '</html>';
     return index;
