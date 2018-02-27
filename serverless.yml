@@ -58,8 +58,7 @@ resources:
                         - 'arn:aws:logs'
                         - Ref: 'AWS::Region'
                         - Ref: 'AWS::AccountId'
-                        - 'Fn::Sub':
-                          'log-group:/aws/lambda/${AWS::Stack}-app:*'
+                        - !Sub 'log-group:/aws/lambda/${AWS::StackName}-app:*'
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - logs:PutLogEvents
@@ -70,8 +69,7 @@ resources:
                         - 'arn:aws:logs'
                         - Ref: 'AWS::Region'
                         - Ref: 'AWS::AccountId'
-                        - 'Fn::Sub':
-                          'log-group:/aws/lambda/${AWS::Stack}-app:*:*'
+                        - !Sub 'log-group:/aws/lambda/${AWS::StackName}-app:*:*'
           - PolicyName: s3access
             PolicyDocument:
               Version: '2012-10-17'
