@@ -1,9 +1,8 @@
 'use strict';
 
 const bodyParser = require('body-parser');
+const common = require('./common');
 const express = require('express');
-const myFavoritesHandler = require('./myFavoritesHandler');
-const oldProgramsHandler = require('./oldProgramsHandler');
 const serverless = require('serverless-http');
 
 const app = express();
@@ -17,7 +16,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-myFavoritesHandler.addHandlers(app);
-oldProgramsHandler.addHandlers(app);
+common.addHandlers(app, 'my-favorites', process.env.MY_FAVORITES_DOMAIN);
+common.addHandlers(app, 'old-programs', process.env.OLD_PROGRAMS_DOMAIN);
 
 module.exports.handler = serverless(app);

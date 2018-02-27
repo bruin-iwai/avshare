@@ -26,3 +26,4 @@ functions:
       OLD_PROGRAMS_DOMAIN: d1fbdzhz2ci06b.cloudfront.net
       CLOUDFRONT_KEY_PAIR_ID: APKAIZXOXRN6HZYYWLNQ
       CLOUDFRONT_PRIVATE_KEY_STRING: ${env:CLOUDFRONT_PRIVATE_KEY_STRING}
+      BUCKET_NAME: jp-live-bruin-iwai-audio-video

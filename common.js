@@ -1,5 +1,6 @@
 'use strict';
 
+const AWS = require('aws-sdk');
 const debug = require('debug')('my:common');
 const moment = require('moment');
 const signer = require('aws-cloudfront-sign');
@@ -39,7 +40,7 @@ function authenticate(req) {
   return username === process.env.MYNAME && password === process.env.MYPASS;
 }
 
-function signUrl(domain) {
+function signUrl(baseUrl) {
   debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
   const expireTime = moment().utc().add(1, 'day');
   const signingOptions = {
@@ -47,13 +48,57 @@ function signUrl(domain) {
     privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
     expireTime
   };
-  const signedUrl = signer.getSignedUrl(`https://${domain}/index.html`, signingOptions);
+  const signedUrl = signer.getSignedUrl(baseUrl, signingOptions);
   debug('signedUrl: %s', signedUrl);
   return signedUrl;
 }
 
+function generateIndex(domain, path) {
+  const s3 = new AWS.S3();
+  return s3.getObject({
+    Bucket: process.env.BUCKET_NAME,
+    Key: `${path}/index.json`
+  }).promise().then(data => data.Body).then(raw => {
+    debug(raw);
+    const data = JSON.parse(raw);
+
+    let index = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>${data.title}</title>
+</head>
+<body>`;
+
+    data.files.forEach(v => {
+      const signedUrl = signUrl(`https://${domain}/${v.file}`);
+      debug('signedUrl: %s', signedUrl);
+      index += `<a href="${signedUrl}">${v.title}</a><br>`;
+    });
+
+    index += '</body>';
+    index += '</html>';
+    return index;
+  });
+}
+
+function addHandlers(app, path, domain) {
+  app.get(`/${path}`, (req, res) => {
+    const form = generateForm(`./${path}`);
+    res.send(form);
+  });
+
+  app.post(`/${path}`, (req, res) => {
+    if (!authenticate(req)) {
+      return res.sendStatus(403);
+    }
+
+    generateIndex(domain, path)
+      .then(html => res.send(html))
+      .catch(err => res.status(500).send(err));
+  });
+}
+
 module.exports = {
-  generateForm,
-  authenticate,
-  signUrl
+  addHandlers
 };
