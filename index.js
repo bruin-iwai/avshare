@@ -56,7 +56,7 @@ app.get('/my-favorites', (req, res) => {
   res.send(form);
 });
 
-function signUrl(res, domain) {
+function signUrl(domain) {
   debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
   const expireTime = moment().utc().add(1, 'day');
   const signingOptions = {
@@ -64,19 +64,9 @@ function signUrl(res, domain) {
     privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
     expireTime
   };
-  const signedCookies = signer.getSignedCookies(`https://${domain}/*`, signingOptions);
-  for (const cookieId in signedCookies) {
-    debug('signedCookies[%s]: %s', cookieId, signedCookies[cookieId]);
-  }
-  const cookieOptions = {
-    domain,
-    path: '/',
-    httpOnly: true,
-    secure: true
-  };
-  res.cookie('CloudFront-Signature', signedCookies['CloudFront-Signature'], cookieOptions);
-  res.cookie('CloudFront-Key-Pair-Id', process.env.CLOUDFRONT_KEY_PAIR_ID, cookieOptions);
-  res.cookie('CloudFront-Expires', String(expireTime.unix()), cookieOptions);
+  const signedUrl = signer.getSignedUrl(`https://${domain}/index.html`, signingOptions);
+  debug('signedUrl: %s', signedUrl);
+  return signedUrl;
 }
 
 app.post('/old-programs', (req, res) => {
@@ -89,8 +79,8 @@ app.post('/old-programs', (req, res) => {
   }
   // res.json(req.body);
 
-  signUrl(res, process.env.OLD_PROGRAMS_DOMAIN);
-  res.redirect(`https://${process.env.OLD_PROGRAMS_DOMAIN}`);
+  const signedUrl = signUrl(process.env.OLD_PROGRAMS_DOMAIN);
+  res.redirect(signedUrl);
 });
 
 app.post('/my-favorites', (req, res) => {
@@ -103,8 +93,8 @@ app.post('/my-favorites', (req, res) => {
   }
   // res.json(req.body);
 
-  signUrl(res, process.env.MY_FAVORITES_DOMAIN);
-  res.redirect(`https://${process.env.MY_FAVORITES_DOMAIN}`);
+  const signedUrl = signUrl(process.env.MY_FAVORITES_DOMAIN);
+  res.redirect(signedUrl);
 });
 
 module.exports.handler = serverless(app);
