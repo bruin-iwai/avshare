@@ -32,6 +32,13 @@ function generateForm(path) {
   return form;
 }
 
+function authenticate(req) {
+  debug(req.body);
+  const username = req.body.username;
+  const password = req.body.password;
+  return username === process.env.MYNAME && password === process.env.MYPASS;
+}
+
 function signUrl(domain) {
   debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
   const expireTime = moment().utc().add(1, 'day');
@@ -47,5 +54,6 @@ function signUrl(domain) {
 
 module.exports = {
   generateForm,
+  authenticate,
   signUrl
 };

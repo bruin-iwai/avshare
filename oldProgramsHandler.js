@@ -1,7 +1,6 @@
 'use strict';
 
 const common = require('./common');
-const debug = require('debug')('my:oldProgramsHandler');
 
 function addHandlers(app) {
   app.get('/old-programs', (req, res) => {
@@ -10,12 +9,8 @@ function addHandlers(app) {
   });
 
   app.post('/old-programs', (req, res) => {
-    debug(req.body);
-    const username = req.body.username;
-    const password = req.body.password;
-    if (username !== process.env.MYNAME || password !== process.env.MYPASS) {
-      res.sendStatus(403);
-      return;
+    if (!common.authenticate(req)) {
+      return res.sendStatus(403);
     }
 
     const signedUrl = common.signUrl(process.env.OLD_PROGRAMS_DOMAIN);
