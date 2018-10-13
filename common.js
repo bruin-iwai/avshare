@@ -66,19 +66,19 @@ function signUrl(baseUrl) {
   return signedUrl;
 }
 
-function generateIndex(domain, path) {
-  return s3
+const generateIndex = async (domain, path) => {
+  const raw = await s3
     .getObject({
       Bucket: process.env.BUCKET_NAME,
       Key: `${path}/index.json`,
     })
     .promise()
-    .then((data) => data.Body)
-    .then((raw) => {
-      debug(raw);
-      const data = JSON.parse(raw);
+    .then((data) => data.Body);
 
-      let index = `<!DOCTYPE html>
+  debug(raw);
+  const data = JSON.parse(raw);
+
+  let index = `<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -88,18 +88,21 @@ function generateIndex(domain, path) {
 <body>
 <ul>`;
 
-      data.files.forEach((v) => {
-        const signedUrl = signUrl(`https://${domain}/${v.file}`);
+  const liTags = await Promise.all(
+    data.files.map((v) =>
+      signUrl(`https://${domain}/${v.file}`).then((signedUrl) => {
         debug('signedUrl: %s', signedUrl);
-        index += `<li><a href="${signedUrl}">${v.title}</a></li>`;
-      });
+        return `<li><a href="${signedUrl}">${v.title}</a></li>`;
+      })
+    )
+  );
+  index += liTags.join('');
 
-      index += '</ul>';
-      index += '</body>';
-      index += '</html>';
-      return index;
-    });
-}
+  index += '</ul>';
+  index += '</body>';
+  index += '</html>';
+  return index;
+};
 
 function addHandlers(app, path, domain) {
   app.get(`/${path}`, (req, res) => {
