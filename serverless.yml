@@ -16,9 +16,20 @@ provider:
         - "s3:GetObject"
       Resource:
         - arn:aws:s3:::jp-live-bruin-iwai-audio-video/*
+    - Effect: "Allow"
+      Action:
+        - "ssm:GetParameter"
+      Resource: "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/*"
 
 plugins:
   - serverless-offline
+  - serverless-plugin-include-dependencies
+  - serverless-pseudo-parameters
+
+package:
+  individually: true
+  exclude:
+    - ./**
 
 functions:
   app:
@@ -27,10 +38,7 @@ functions:
       - http: ANY /
       - http: 'ANY {proxy+}'
     environment:
-      MYNAME: ${{env:MYNAME}}
-      MYPASS: ${{env:MYPASS}}
       MY_FAVORITES_DOMAIN: d2ri4pj87do1tj.cloudfront.net
       OLD_PROGRAMS_DOMAIN: d1fbdzhz2ci06b.cloudfront.net
-      CLOUDFRONT_KEY_PAIR_ID: APKAIZXOXRN6HZYYWLNQ
       CLOUDFRONT_PRIVATE_KEY_STRING: ${{env:CLOUDFRONT_PRIVATE_KEY_STRING}}
       BUCKET_NAME: jp-live-bruin-iwai-audio-video
