@@ -90,15 +90,13 @@ const generateIndex = async (domain, path) => {
 <ul>`;
 
   const keypairId = await getParameterValue('/avashare/CLOUDFRONT_KEY_PAIR_ID');
-  const liTags = await Promise.all(
-    data.files.map((v) =>
-      signUrl(`https://${domain}/${v.file}`, keypairId).then((signedUrl) => {
-        debug('signedUrl: %s', signedUrl);
-        return `<li><a href="${signedUrl}">${v.title}</a></li>`;
-      })
-    )
-  );
-  index += liTags.join('');
+  index += data.files
+    .map((v) => {
+      const signedUrl = signUrl(`https://${domain}/${v.file}`, keypairId);
+      debug('signedUrl: %s', signedUrl);
+      return `<li><a href="${signedUrl}">${v.title}</a></li>`;
+    })
+    .join('');
 
   index += '</ul>';
   index += '</body>';
