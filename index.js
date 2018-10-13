@@ -1,11 +1,14 @@
 const bodyParser = require('body-parser');
-const common = require('./common');
 const express = require('express');
 const serverless = require('serverless-http');
+const common = require('./common');
 
 const app = express();
 
-process.env.CLOUDFRONT_PRIVATE_KEY_STRING = process.env.CLOUDFRONT_PRIVATE_KEY_STRING.replace(/\\n/g, '\n');
+process.env.CLOUDFRONT_PRIVATE_KEY_STRING = process.env.CLOUDFRONT_PRIVATE_KEY_STRING.replace(
+  /\\n/g,
+  '\n'
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
