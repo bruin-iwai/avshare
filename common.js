@@ -4,6 +4,7 @@ const moment = require('moment');
 const signer = require('aws-cloudfront-sign');
 
 const ssm = new AWS.SSM();
+const secretsManager = new AWS.SecretsManager();
 const s3 = new AWS.S3();
 
 function generateForm(path) {
@@ -44,6 +45,14 @@ const getParameterValue = (name) =>
     .promise()
     .then((ret) => ret.Parameter.Value);
 
+const getSecretValue = (name) =>
+  secretsManager
+    .getSecretValue({
+      SecretId: name,
+    })
+    .promise()
+    .then((data) => Buffer.from(data.SecretBinary, 'base64').toString('ascii'));
+
 const authenticate = async (req) => {
   debug(req.body);
   const { username, password } = req.body;
@@ -54,12 +63,11 @@ const authenticate = async (req) => {
   return username === myname && password === mypass;
 };
 
-function signUrl(baseUrl, keypairId) {
-  debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
+function signUrl(baseUrl, keypairId, privateKeyString) {
   const expireTime = moment().add(1, 'day');
   const signingOptions = {
     keypairId,
-    privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
+    privateKeyString,
     expireTime,
   };
   const signedUrl = signer.getSignedUrl(baseUrl, signingOptions);
@@ -90,9 +98,10 @@ const generateIndex = async (domain, path) => {
 <ul>`;
 
   const keypairId = await getParameterValue('/avashare/CLOUDFRONT_KEY_PAIR_ID');
+  const privateKeyString = await getSecretValue('avshare-cloudfront-private-key.pem');
   index += data.files
     .map((v) => {
-      const signedUrl = signUrl(`https://${domain}/${v.file}`, keypairId);
+      const signedUrl = signUrl(`https://${domain}/${v.file}`, keypairId, privateKeyString);
       debug('signedUrl: %s', signedUrl);
       return `<li><a href="${signedUrl}">${v.title}</a></li>`;
     })
