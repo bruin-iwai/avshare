@@ -19,6 +19,8 @@ provider:
 
 plugins:
   - serverless-offline
+  - serverless-plugin-include-dependencies
+  - serverless-pseudo-parameters
 
 functions:
   app:
