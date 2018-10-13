@@ -1,5 +1,3 @@
-'use strict';
-
 const bodyParser = require('body-parser');
 const common = require('./common');
 const express = require('express');

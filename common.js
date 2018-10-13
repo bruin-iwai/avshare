@@ -1,9 +1,10 @@
-'use strict';
-
 const AWS = require('aws-sdk');
 const debug = require('debug')('my:common');
 const moment = require('moment');
 const signer = require('aws-cloudfront-sign');
+
+const ssm = new AWS.SSM();
+const s3 = new AWS.S3();
 
 function generateForm(path) {
   const form = `<!DOCTYPE html>
@@ -34,20 +35,31 @@ function generateForm(path) {
   return form;
 }
 
-function authenticate(req) {
+const getParameterValue = (name) =>
+  ssm
+    .getParameter({
+      Name: name,
+      WithDecryption: true,
+    })
+    .then((ret) => ret.Parameter.Value);
+
+const authenticate = async (req) => {
   debug(req.body);
-  const username = req.body.username;
-  const password = req.body.password;
-  return username === process.env.MYNAME && password === process.env.MYPASS;
-}
+  const { username, password } = req.body;
+
+  const myname = await getParameterValue('/avshare/MYNAME');
+  const mypass = await getParameterValue('/avshare/MYPASS');
+
+  return username === myname && password === mypass;
+};
 
 function signUrl(baseUrl) {
   debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
-  const expireTime = moment().utc().add(1, 'day');
+  const expireTime = moment().add(1, 'day');
   const signingOptions = {
     keypairId: process.env.CLOUDFRONT_KEY_PAIR_ID,
     privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
-    expireTime
+    expireTime,
   };
   const signedUrl = signer.getSignedUrl(baseUrl, signingOptions);
   debug('signedUrl: %s', signedUrl);
@@ -55,15 +67,18 @@ function signUrl(baseUrl) {
 }
 
 function generateIndex(domain, path) {
-  const s3 = new AWS.S3();
-  return s3.getObject({
-    Bucket: process.env.BUCKET_NAME,
-    Key: `${path}/index.json`
-  }).promise().then(data => data.Body).then(raw => {
-    debug(raw);
-    const data = JSON.parse(raw);
+  return s3
+    .getObject({
+      Bucket: process.env.BUCKET_NAME,
+      Key: `${path}/index.json`,
+    })
+    .promise()
+    .then((data) => data.Body)
+    .then((raw) => {
+      debug(raw);
+      const data = JSON.parse(raw);
 
-    let index = `<!DOCTYPE html>
+      let index = `<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -73,17 +88,17 @@ function generateIndex(domain, path) {
 <body>
 <ul>`;
 
-    data.files.forEach(v => {
-      const signedUrl = signUrl(`https://${domain}/${v.file}`);
-      debug('signedUrl: %s', signedUrl);
-      index += `<li><a href="${signedUrl}">${v.title}</a></li>`;
-    });
+      data.files.forEach((v) => {
+        const signedUrl = signUrl(`https://${domain}/${v.file}`);
+        debug('signedUrl: %s', signedUrl);
+        index += `<li><a href="${signedUrl}">${v.title}</a></li>`;
+      });
 
-    index += '</ul>';
-    index += '</body>';
-    index += '</html>';
-    return index;
-  });
+      index += '</ul>';
+      index += '</body>';
+      index += '</html>';
+      return index;
+    });
 }
 
 function addHandlers(app, path, domain) {
@@ -93,16 +108,19 @@ function addHandlers(app, path, domain) {
   });
 
   app.post(`/${path}`, (req, res) => {
-    if (!authenticate(req)) {
-      return res.sendStatus(403);
-    }
+    authenticate(req).then((isAuthenticated) => {
+      if (!isAuthenticated) {
+        res.sendStatus(403);
+        return;
+      }
 
-    generateIndex(domain, path)
-      .then(html => res.send(html))
-      .catch(err => res.status(500).send(err));
+      generateIndex(domain, path)
+        .then((html) => res.send(html))
+        .catch((err) => res.status(500).send(err));
+    });
   });
 }
 
 module.exports = {
-  addHandlers
+  addHandlers,
 };

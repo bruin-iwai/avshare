@@ -16,11 +16,20 @@ provider:
         - "s3:GetObject"
       Resource:
         - arn:aws:s3:::jp-live-bruin-iwai-audio-video/*
+    - Effect: "Allow"
+      Action:
+        - "ssm:GetParameter"
+      Resource: "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/*"
 
 plugins:
   - serverless-offline
   - serverless-plugin-include-dependencies
   - serverless-pseudo-parameters
+
+package:
+  individually: true
+  exclude:
+    - ./**
 
 functions:
   app:
