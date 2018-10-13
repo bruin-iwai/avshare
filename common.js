@@ -41,6 +41,7 @@ const getParameterValue = (name) =>
       Name: name,
       WithDecryption: true,
     })
+    .promise()
     .then((ret) => ret.Parameter.Value);
 
 const authenticate = async (req) => {
