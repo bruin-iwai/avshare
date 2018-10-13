@@ -53,11 +53,11 @@ const authenticate = async (req) => {
   return username === myname && password === mypass;
 };
 
-function signUrl(baseUrl) {
+function signUrl(baseUrl, keypairId) {
   debug(process.env.CLOUDFRONT_PRIVATE_KEY_STRING);
   const expireTime = moment().add(1, 'day');
   const signingOptions = {
-    keypairId: process.env.CLOUDFRONT_KEY_PAIR_ID,
+    keypairId,
     privateKeyString: process.env.CLOUDFRONT_PRIVATE_KEY_STRING,
     expireTime,
   };
@@ -88,9 +88,10 @@ const generateIndex = async (domain, path) => {
 <body>
 <ul>`;
 
+  const keypairId = await getParameterValue('/avashare/CLOUDFRONT_KEY_PAIR_ID');
   const liTags = await Promise.all(
     data.files.map((v) =>
-      signUrl(`https://${domain}/${v.file}`).then((signedUrl) => {
+      signUrl(`https://${domain}/${v.file}`, keypairId).then((signedUrl) => {
         debug('signedUrl: %s', signedUrl);
         return `<li><a href="${signedUrl}">${v.title}</a></li>`;
       })
