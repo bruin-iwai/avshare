@@ -45,3 +45,4 @@ functions:
       MY_FAVORITES_DOMAIN: d2ri4pj87do1tj.cloudfront.net
       OLD_PROGRAMS_DOMAIN: d1fbdzhz2ci06b.cloudfront.net
       BUCKET_NAME: jp-live-bruin-iwai-audio-video
+      DEBUG: 'my:*'

@@ -1,7 +1,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const serverless = require('serverless-http');
-const common = require('./common');
+const addHandlers = require('./addHandlers');
 
 const app = express();
 
@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-common.addHandlers(app, 'my-favorites', process.env.MY_FAVORITES_DOMAIN);
-common.addHandlers(app, 'old-programs', process.env.OLD_PROGRAMS_DOMAIN);
+addHandlers(app, 'my-favorites', process.env.MY_FAVORITES_DOMAIN);
+addHandlers(app, 'old-programs', process.env.OLD_PROGRAMS_DOMAIN);
 
 module.exports.handler = serverless(app);
