@@ -4,6 +4,7 @@
     "prettier"
   ],
   "plugins": [
+    "jest",
     "prettier"
   ],
   "env": {
