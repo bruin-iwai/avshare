@@ -1,0 +1,13 @@
+{
+  "title": "My favorites",
+  "files": [
+    {
+      "file": "a.mp4",
+      "title": "aaaaa"
+    },
+    {
+      "file": "b.mp4",
+      "title": "bbb"
+    }
+  ]
+}
