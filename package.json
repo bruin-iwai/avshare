@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "deploy": "sls deploy",
-    "lint": "eslint **/*.js",
+    "lint": "eslint *.js app/**/*.js __tests__/**/*.js __mocks__/**/*.js",
     "local": "sls offline start"
   },
   "repository": {
