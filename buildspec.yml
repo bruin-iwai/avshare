@@ -6,7 +6,7 @@ phases:
       nodejs: 8
     commands:
       - npm install -g serverless
-      - npm install
+      - npm ci
   build:
     commands:
       - npm run deploy
