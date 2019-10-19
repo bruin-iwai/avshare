@@ -5,7 +5,7 @@ service: avshare
 provider:
   variableSyntax: "\\${{([ ~:a-zA-Z0-9._\\'\",\\-\\/\\(\\)]+?)}}" # notice the double quotes for yaml to ignore the escape characters!
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   stage: dev
   region: ${{env:AWS_REGION, 'ap-northeast-1'}}
   memorySize: 128
