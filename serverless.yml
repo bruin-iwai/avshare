@@ -27,7 +27,7 @@ provider:
   deploymentBucket:
     blockPublicAccess: true
   tracing:
-    lambda: true
+    apiGateway: true
   logRetentionInDays: 14
 
 plugins:
