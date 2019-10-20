@@ -24,6 +24,8 @@ provider:
       Action:
         - "secretsmanager:GetSecretValue"
       Resource: "arn:aws:secretsmanager:#{AWS::Region}:#{AWS::AccountId}:secret:*"
+  deploymentBucket:
+    blockPublicAccess: true
 
 plugins:
   - serverless-offline
