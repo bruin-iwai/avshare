@@ -28,6 +28,7 @@ provider:
     blockPublicAccess: true
   tracing:
     apiGateway: true
+    lambda: true
   logRetentionInDays: 14
 
 plugins:
